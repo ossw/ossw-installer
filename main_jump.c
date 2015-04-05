@@ -21,14 +21,12 @@
  * @image html example_board_setup_a.jpg "Use board setup A for this example."
  */
 
-#include "nrf.h"
-
 /**
  * @brief Function for application main entry.
  */
 int main(void)
 {
-    
+	  ((void (*)(void))0x36000)();
 }
 
 
