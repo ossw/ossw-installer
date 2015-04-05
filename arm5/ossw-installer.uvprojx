@@ -409,11 +409,6 @@
           <GroupName>app</GroupName>
           <Files>
             <File>
-              <FileName>keil_arm_uv4.lnt</FileName>
-              <FileType>5</FileType>
-              <FilePath>C:\nrf51_sdk_v5_2_0\nrf51822\Source\keil_arm_uv4.lnt</FilePath>
-            </File>
-            <File>
               <FileName>main_installer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\main_installer.c</FilePath>
