@@ -87,46 +87,50 @@ static void flash_word_write(uint32_t *address, uint32_t value)
     }
 }
 
+void clone_data(uint32_t *src, uint32_t *dest, uint32_t length) {
+    uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
+	  uint32_t *clean_address = dest; 
+	  uint32_t dest_end_address = (uint32_t)dest + length; 
+	
+	  // clear pages
+		while ((uint32_t)clean_address < dest_end_address) {
+		    flash_page_erase(clean_address);
+			  clean_address += pg_size;
+		}
+		
+		// clone data	
+	  uint32_t *read_address = src; 	
+	  uint32_t *write_address = dest; 	
+		uint32_t data;
+		while ((uint32_t)write_address < dest_end_address) {
+			  data = (uint32_t)*read_address++;
+			  flash_word_write(write_address++, (uint32_t)data);
+		}
+}
 
 /**
  * @brief Function for application main entry.
  */
 int main(void)
 {
-  /*  uint32_t *addr;
-    uint8_t patwr;
-    uint8_t patrd;
-    uint8_t patold;
-    uint32_t i;
-    uint32_t pg_size;
-    uint32_t pg_num;
+    uint32_t *sd_dest_addr = (uint32_t *)0;
+    uint32_t *bl_dest_addr = (uint32_t *)0x3C000;
+    uint32_t *sd_src_addr = (uint32_t *)0x19000;
+	  uint32_t sd_size = 0x1D000;
+    uint32_t *bl_src_addr = (uint32_t *)0x15000;
+	  uint32_t bl_size = 0x4000;
 
-    patold  = 0;
-    pg_size = NRF_FICR->CODEPAGESIZE;
-    pg_num  = NRF_FICR->CODESIZE - 1;    // Use last page in flash
-*/
-    while (true)
-    {
- /*       // Start address:
-        addr = (uint32_t *)(pg_size * pg_num);
-        // Erase page:
-        flash_page_erase(addr);
-        i = 0;
-        do
-        {
-            // Read pattern from port 0 (pins0-7), and write it to flash:
-            patwr =  nrf_gpio_port_read(NRF_GPIO_PORT_SELECT_PORT0);
-            if (patold != patwr)
-            {
-                patold = patwr;
-                flash_word_write(++addr, (uint32_t)patwr);
-                i += 4;
-            }
-            // Read pattern from flash and write it to port 1 (pins8-15):
-            patrd = (uint8_t)*addr;
-            nrf_gpio_port_write(NRF_GPIO_PORT_SELECT_PORT1, patrd);
-        } while (i < pg_size);*/
-    }
+  	// copy bootloader
+  	clone_data(bl_src_addr, bl_dest_addr, bl_size);
+	
+  	// copy softdevice
+  	clone_data(sd_src_addr, sd_dest_addr, sd_size);
+	
+	  // set new bootloader address
+		uint32_t *uicr_bl = (uint32_t *)0x10001014;
+	  flash_word_write(uicr_bl, (uint32_t)bl_dest_addr);
+	
+	  NVIC_SystemReset();
 }
 
 
