@@ -47,9 +47,9 @@ int main(void)
 	
     uint32_t *inst_src_addr = (uint32_t *)0x36000;
     uint32_t *inst_dest_addr = (uint32_t *)0x20002000;
-	  uint32_t inst_size = 0x2000;
+	  uint32_t inst_size = 0x900;
 	
-	//  clone_to_memory(inst_src_addr, inst_dest_addr, inst_size);
+	  clone_to_memory(inst_src_addr, inst_dest_addr, inst_size);
 	
 	  StartApplication((uint32_t)inst_dest_addr);
 }

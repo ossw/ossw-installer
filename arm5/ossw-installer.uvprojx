@@ -230,7 +230,7 @@
             <RoSelD>3</RoSelD>
             <RwSelD>3</RwSelD>
             <CodeSel>0</CodeSel>
-            <OptFeed>1</OptFeed>
+            <OptFeed>0</OptFeed>
             <NoZi1>0</NoZi1>
             <NoZi2>0</NoZi2>
             <NoZi3>0</NoZi3>
@@ -309,8 +309,8 @@
               </OCR_RVCT3>
               <OCR_RVCT4>
                 <Type>1</Type>
-                <StartAddress>0x20002000</StartAddress>
-                <Size>0x2000</Size>
+                <StartAddress>0x20003000</StartAddress>
+                <Size>0x1000</Size>
               </OCR_RVCT4>
               <OCR_RVCT5>
                 <Type>1</Type>
@@ -334,7 +334,7 @@
               </OCR_RVCT8>
               <OCR_RVCT9>
                 <Type>0</Type>
-                <StartAddress>0x20000000</StartAddress>
+                <StartAddress>0x20001000</StartAddress>
                 <Size>0x2000</Size>
               </OCR_RVCT9>
               <OCR_RVCT10>
@@ -412,6 +412,31 @@
               <FileName>main_installer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\main_installer.c</FilePath>
+            </File>
+            <File>
+              <FileName>ext_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\ext_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>ext_flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\ext_flash.h</FilePath>
+            </File>
+            <File>
+              <FileName>spi.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>spi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\spi.h</FilePath>
+            </File>
+            <File>
+              <FileName>boards.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\boards.h</FilePath>
             </File>
           </Files>
         </Group>

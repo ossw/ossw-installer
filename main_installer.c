@@ -69,7 +69,7 @@ void flash_uicr_erase()
         // Do nothing.
     }
     
-    // Erase page:
+    // Erase uicr:
     //NRF_NVMC->ERASEUICR = 1;
 		NRF_NVMC->ERASEALL = 1;
     
@@ -150,47 +150,89 @@ static void handleError(uint32_t error_code) {
 	  do{}while(true);
 }
 
+static bool restore_from_ext_flash(uint32_t *address, uint32_t size) {
+	  // force that size if multiplication of 4
+	  if (size % 4 > 0) {
+			  size += (4 - (size % 4));
+		}
+	  uint32_t end_address = (uint32_t)address + size; 
+	
+	   // clear pages (not required when global erase)
+/*    uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
+ 	  uint32_t *clean_address = address; 
+		while ((uint32_t)clean_address < end_address) {
+		    flash_page_erase(clean_address);
+			  clean_address += pg_size;
+		}
+	*/	
+		uint32_t tmp_buff[32];
+	  int32_t part_size;
+		while ((uint32_t)address < end_address) {
+			  part_size = end_address - (uint32_t)address > 128 ? 128 : end_address - (uint32_t)address;
+		    if (!ext_flash_read_data((uint32_t)address, (uint8_t *)tmp_buff, part_size)){
+		    	  return false;
+		    }
+				
+				uint32_t word_number = part_size/4;
+				for (uint32_t i = 0; i < word_number; i++) {
+					  flash_word_write(address++, tmp_buff[i]);
+				}
+		}
+		return true;
+}
+
 /**
  * @brief Function for application main entry.
  */
 int main(void)
 {
-//    uint32_t *sd_dest_addr = (uint32_t *)0;
+    uint32_t *sd_dest_addr = (uint32_t *)0;
+    uint32_t *sd_src_addr = (uint32_t *)0x19000;
+	  uint32_t sd_size = 0x1D000;
     uint32_t *bl_dest_addr = (uint32_t *)0x3C000;
-//    uint32_t *sd_src_addr = (uint32_t *)0x19000;
-//	  uint32_t sd_size = 0x1D000;
     uint32_t *bl_src_addr = (uint32_t *)0x15000;
 	  uint32_t bl_size = 0x4000;
 	
     spi_init();
 	
+	  // erase all data in external flash
 	  if(!ext_flash_erase_chip()){
 			 handleError(0x01);
 		}
  
-  	// backup bootloader
+  	// backup bootloader in external flash
 		if (!ext_flash_write_data_block((uint32_t)bl_dest_addr, (uint8_t *)bl_src_addr, bl_size)){
-			  handleError(0x02);
+			  handleError(0x11);
+		}
+		
+		// backup softdevice in external flash
+		if (!ext_flash_write_data_block((uint32_t)sd_dest_addr, (uint8_t *)sd_src_addr, sd_size)){
+			  handleError(0x12);
 		}
 		
 		// verify bootloader data
 		if (!ext_flash_check_equal((uint32_t)bl_dest_addr, (uint8_t *)bl_src_addr, bl_size)) {
-			  handleError(0x03);
+			  handleError(0x21);
 		}
 		
-		// restore bootloader from external cache
-	
-  	// copy softdevice
-  	//clone_to_external_flash(sd_src_addr, sd_dest_addr, sd_size);
-	
-	  // set new bootloader address
-/*	  flash_uicr_erase();
+		// verify softdevice data
+		if (!ext_flash_check_equal((uint32_t)sd_dest_addr, (uint8_t *)sd_src_addr, sd_size)) {
+			  handleError(0x22);
+		}
+		
+	  // erase UICR and set new bootloader address
+	  flash_uicr_erase();
 		uint32_t *uicr_bl = (uint32_t *)0x10001014;
 	  flash_word_write(uicr_bl, (uint32_t)bl_dest_addr);
-*/	
 	
-	do{}while(true);
-	 // NVIC_SystemReset();
+		// restore bootloader from external cache
+		restore_from_ext_flash(bl_dest_addr, bl_size);
+	
+		// restore bootloader from external cache
+		restore_from_ext_flash(bl_dest_addr, bl_size);
+	
+	//do{}while(true);
+	  NVIC_SystemReset();
 }
 
 
