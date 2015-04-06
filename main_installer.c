@@ -24,6 +24,9 @@
 #include <stdbool.h>
 #include "nrf.h"
 #include "nrf_gpio.h"
+#include "spi.h"
+
+static uint32_t * p_spi0_base_address;
 
 /** @brief Function for erasing a page in flash.
  *
@@ -112,7 +115,7 @@ static void flash_word_write(uint32_t *address, uint32_t value)
     }
 }
 
-void clone_data(uint32_t *src, uint32_t *dest, uint32_t length) {
+/*static void clone_data(uint32_t *src, uint32_t *dest, uint32_t length) {
     uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
  	  uint32_t *clean_address = dest; 
 	  uint32_t dest_end_address = (uint32_t)dest + length; 
@@ -131,33 +134,67 @@ void clone_data(uint32_t *src, uint32_t *dest, uint32_t length) {
 			  data = (uint32_t)*read_address++;
 			  flash_word_write(write_address++, (uint32_t)data);
 		}
+}*/
+
+static void clone_to_external_flash(uint32_t *src, uint32_t *dest, uint32_t length) {
+	  
 }
+
+/**@brief  Function for configuring the spi
+ */
+static void spi_init(void)
+{
+    p_spi0_base_address = spi_master_init(SPI0, SPI_MODE0, false);
+}
+/*
+static void ext_flash_write_enable() {
+	  
+}
+
+static void ext_flash_erase_page() {
+	
+}
+
+static void ext_flash_read_status() {
+	
+}
+
+static bool ext_flash_is_busy() {
+	
+}
+
+static bool ext_flash_read(uint32_t ext_flash_address, uint32_t *buffer) {
+	  
+}*/
 
 /**
  * @brief Function for application main entry.
  */
 int main(void)
 {
+	
     uint32_t *sd_dest_addr = (uint32_t *)0;
     uint32_t *bl_dest_addr = (uint32_t *)0x3C000;
     uint32_t *sd_src_addr = (uint32_t *)0x19000;
 	  uint32_t sd_size = 0x1D000;
     uint32_t *bl_src_addr = (uint32_t *)0x15000;
 	  uint32_t bl_size = 0x4000;
+	
+	
+    spi_init();
 
   	// copy bootloader
-  	//clone_data(bl_src_addr, bl_dest_addr, bl_size);
+  	// clone_data(bl_src_addr, bl_dest_addr, bl_size);
+		clone_to_external_flash(bl_src_addr, bl_dest_addr, bl_size);
 	
   	// copy softdevice
-  	//clone_data(sd_src_addr, sd_dest_addr, sd_size);
+  	clone_to_external_flash(sd_src_addr, sd_dest_addr, sd_size);
 	
 	  // set new bootloader address
-		/*uint32_t *uicr_address = (uint32_t *)0x10001000;
-	  flash_page_erase(uicr_address);*/
-	  flash_uicr_erase();
+/*	  flash_uicr_erase();
 		uint32_t *uicr_bl = (uint32_t *)0x10001014;
 	  flash_word_write(uicr_bl, (uint32_t)bl_dest_addr);
-	
+*/	
 	
 	do{}while(true);
 	 // NVIC_SystemReset();
