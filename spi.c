@@ -142,8 +142,8 @@ bool spi_master_tx_rx(uint32_t *spi_base_address, uint32_t device, uint16_t tran
     return true;
 }
 
-bool spi_internal_write_data(NRF_SPI_Type *spi_base, const uint8_t* tx_data, uint16_t tx_data_size) {
-    uint16_t number_of_txd_bytes = 0;
+bool spi_internal_tx_data(NRF_SPI_Type *spi_base, const uint8_t* tx_data, uint32_t tx_data_size) {
+    uint32_t number_of_txd_bytes = 0;
     uint32_t counter = 0;
 	  while(number_of_txd_bytes < tx_data_size)
     {
@@ -166,13 +166,14 @@ bool spi_internal_write_data(NRF_SPI_Type *spi_base, const uint8_t* tx_data, uin
             spi_base->EVENTS_READY = 0U;
         }
 
+				spi_base->RXD;
         number_of_txd_bytes++;
     };
 		return true;
 }
 
-bool spi_internal_read_data(NRF_SPI_Type *spi_base, uint8_t* rx_data, uint16_t rx_data_size) {
-    uint16_t number_of_rxd_bytes = 0;
+bool spi_internal_rx_data(NRF_SPI_Type *spi_base, uint8_t* rx_data, uint32_t rx_data_size) {
+    uint32_t number_of_rxd_bytes = 0;
     uint32_t counter = 0;
 	  while(number_of_rxd_bytes < rx_data_size)
     {
@@ -201,46 +202,61 @@ bool spi_internal_read_data(NRF_SPI_Type *spi_base, uint8_t* rx_data, uint16_t r
 		return true;
 }
 
-bool spi_master_tx_data(uint32_t *spi_base_address, uint32_t device, const uint8_t* command, uint16_t command_size, const uint8_t* data, uint16_t data_size)
+bool spi_master_tx_data(uint32_t *spi_base_address, uint32_t device, const uint8_t* command, uint16_t command_size, const uint8_t* tx_data, uint32_t tx_data_size)
 {
-    uint32_t SEL_SS_PINOUT = device;
 	  bool success;
     /*lint -e{826} //Are too small pointer conversion */
     NRF_SPI_Type *spi_base = (NRF_SPI_Type *)spi_base_address;
 
     /* enable slave (slave select active low) */
-    nrf_gpio_pin_clear(SEL_SS_PINOUT);
+    nrf_gpio_pin_clear(device);
 	
-	  success = spi_internal_write_data(spi_base, command, command_size);
+	  success = spi_internal_tx_data(spi_base, command, command_size);
 	
 		if (success) {
-			  success = spi_internal_write_data(spi_base, data, data_size);
+			  success = spi_internal_tx_data(spi_base, tx_data, tx_data_size);
 		}
 
     /* disable slave (slave select active low) */
-    nrf_gpio_pin_set(SEL_SS_PINOUT);
+    nrf_gpio_pin_set(device);
 
     return success;
 }
 
-bool spi_master_rx_data(uint32_t *spi_base_address, uint32_t device, const uint8_t* command, uint16_t command_size, uint8_t* rx_data, uint16_t rx_data_size)
+bool spi_master_tx(uint32_t *spi_base_address, uint32_t device, const uint8_t* command, uint16_t command_size)
 {
-    uint32_t SEL_SS_PINOUT = device;
 	  bool success;
     /*lint -e{826} //Are too small pointer conversion */
     NRF_SPI_Type *spi_base = (NRF_SPI_Type *)spi_base_address;
 
     /* enable slave (slave select active low) */
-    nrf_gpio_pin_clear(SEL_SS_PINOUT);
+    nrf_gpio_pin_clear(device);
 	
-	  success = spi_internal_write_data(spi_base, command, command_size);
+	  success = spi_internal_tx_data(spi_base, command, command_size);
+
+    /* disable slave (slave select active low) */
+    nrf_gpio_pin_set(device);
+
+    return success;
+}
+
+bool spi_master_rx_data(uint32_t *spi_base_address, uint32_t device, const uint8_t* command, uint16_t command_size, uint8_t* rx_data, uint32_t rx_data_size)
+{
+	  bool success;
+    /*lint -e{826} //Are too small pointer conversion */
+    NRF_SPI_Type *spi_base = (NRF_SPI_Type *)spi_base_address;
+
+    /* enable slave (slave select active low) */
+    nrf_gpio_pin_clear(device);
+	
+	  success = spi_internal_tx_data(spi_base, command, command_size);
 	
 		if (success) {
-			  success = spi_internal_read_data(spi_base, rx_data, rx_data_size);
+			  success = spi_internal_rx_data(spi_base, rx_data, rx_data_size);
 		}
 
     /* disable slave (slave select active low) */
-    nrf_gpio_pin_set(SEL_SS_PINOUT);
+    nrf_gpio_pin_set(device);
 
     return success;
 }

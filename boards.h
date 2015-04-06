@@ -29,6 +29,8 @@
 #define SPI0_SS0     8u                                      /**< SPI Slave Select GPIO pin number for device 0 */
 #define SPI0_SS1     23u                                     /**< SPI Slave Select GPIO pin number for device 1 */
 
+#define EXT_FLASH_SPI_SS        SPI0_SS0
+
 #define TIMEOUT_COUNTER         0x3000uL                     /**< Timeout for SPI transaction in units of loop iterations. */
 
 #endif
