@@ -20,13 +20,38 @@
  *
  * @image html example_board_setup_a.jpg "Use board setup A for this example."
  */
+#include "nrf.h"
 
+__asm void StartApplication(uint32_t start_addr)
+{
+    LDR   R2, [R0]               ; Get App MSP.
+    MSR   MSP, R2                ; Set the main stack pointer to the applications MSP.
+    LDR   R3, [R0, #0x00000004]  ; Get application reset vector address.
+    BX    R3                     ; No return - stack code is now activated only through SVC and plain interrupts.
+    ALIGN
+}
+
+void clone_to_memory(uint32_t *src, uint32_t *dest, uint32_t length) {
+	  uint32_t end_dest_addr = (uint32_t)dest + length;
+	  while((uint32_t)dest < end_dest_addr) {
+			  *dest++ = *src++;
+		}
+}
+	
 /**
  * @brief Function for application main entry.
  */
 int main(void)
 {
-	  ((void (*)(void))0x36000)();
+	  // TODO: verify image checksum
+	
+    uint32_t *inst_src_addr = (uint32_t *)0x36000;
+    uint32_t *inst_dest_addr = (uint32_t *)0x20002000;
+	  uint32_t inst_size = 0x2000;
+	
+	  clone_to_memory(inst_src_addr, inst_dest_addr, inst_size);
+	
+	  StartApplication((uint32_t)inst_dest_addr);
 }
 
 

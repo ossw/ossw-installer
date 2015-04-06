@@ -55,6 +55,31 @@ static void flash_page_erase(uint32_t *page_address)
     }
 }
 
+static void flash_uicr_erase()
+{
+    NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Een << NVMC_CONFIG_WEN_Pos);
+    while (NRF_NVMC->READY == NVMC_READY_READY_Busy)
+    {
+        // Do nothing.
+    }
+    
+    // Erase page:
+    //NRF_NVMC->ERASEUICR = 1;
+		NRF_NVMC->ERASEALL = 1;
+    
+    while (NRF_NVMC->READY == NVMC_READY_READY_Busy)
+    {
+        // Do nothing.
+    }
+    
+    NRF_NVMC->CONFIG = (NVMC_CONFIG_WEN_Ren << NVMC_CONFIG_WEN_Pos);
+    
+    while (NRF_NVMC->READY == NVMC_READY_READY_Busy)
+    {
+        // Do nothing.
+    }
+}
+
 
 /** @brief Function for filling a page in flash with a value.
  *
@@ -89,7 +114,7 @@ static void flash_word_write(uint32_t *address, uint32_t value)
 
 void clone_data(uint32_t *src, uint32_t *dest, uint32_t length) {
     uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
-	  uint32_t *clean_address = dest; 
+ 	  uint32_t *clean_address = dest; 
 	  uint32_t dest_end_address = (uint32_t)dest + length; 
 	
 	  // clear pages
@@ -121,16 +146,21 @@ int main(void)
 	  uint32_t bl_size = 0x4000;
 
   	// copy bootloader
-  	clone_data(bl_src_addr, bl_dest_addr, bl_size);
+  	//clone_data(bl_src_addr, bl_dest_addr, bl_size);
 	
   	// copy softdevice
-  	clone_data(sd_src_addr, sd_dest_addr, sd_size);
+  	//clone_data(sd_src_addr, sd_dest_addr, sd_size);
 	
 	  // set new bootloader address
+		/*uint32_t *uicr_address = (uint32_t *)0x10001000;
+	  flash_page_erase(uicr_address);*/
+	  flash_uicr_erase();
 		uint32_t *uicr_bl = (uint32_t *)0x10001014;
 	  flash_word_write(uicr_bl, (uint32_t)bl_dest_addr);
 	
-	  NVIC_SystemReset();
+	
+	do{}while(true);
+	 // NVIC_SystemReset();
 }
 
 
