@@ -33,4 +33,6 @@
 
 #define TIMEOUT_COUNTER         0x3000uL                     /**< Timeout for SPI transaction in units of loop iterations. */
 
+extern uint32_t * p_spi0_base_address;
+
 #endif
