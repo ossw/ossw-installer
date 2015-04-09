@@ -156,7 +156,7 @@
           <Type>0</Type>
           <LineNumber>54</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>82512</Address>
+          <Address>82514</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -172,7 +172,7 @@
           <Type>0</Type>
           <LineNumber>52</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>82502</Address>
+          <Address>82504</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -181,7 +181,7 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\main_jump.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\ossw_jump\../main_jump.c\52</Expression>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <Tracepoint>
