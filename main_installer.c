@@ -158,13 +158,13 @@ static bool restore_from_ext_flash(uint32_t *address, uint32_t size) {
 	  uint32_t end_address = (uint32_t)address + size; 
 	
 	   // clear pages (not required when global erase)
-/*    uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
+  /*  uint32_t pg_size = NRF_FICR->CODEPAGESIZE;
  	  uint32_t *clean_address = address; 
 		while ((uint32_t)clean_address < end_address) {
 		    flash_page_erase(clean_address);
 			  clean_address += pg_size;
-		}
-	*/	
+		}*/
+		
 		uint32_t tmp_buff[32];
 	  int32_t part_size;
 		while ((uint32_t)address < end_address) {
@@ -196,7 +196,7 @@ int main(void)
     spi_init();
 	
 	  // erase all data in external flash
-	  if(!ext_flash_erase_chip()){
+ 	  if(!ext_flash_erase_chip()){
 			 handleError(0x01);
 		}
  
@@ -225,8 +225,8 @@ int main(void)
 		uint32_t *uicr_bl = (uint32_t *)0x10001014;
 	  flash_word_write(uicr_bl, (uint32_t)bl_dest_addr);
 	
-		// restore bootloader from external cache
-		restore_from_ext_flash(bl_dest_addr, bl_size);
+		// restore softdevice from external cache
+		restore_from_ext_flash(sd_dest_addr, sd_size);
 	
 		// restore bootloader from external cache
 		restore_from_ext_flash(bl_dest_addr, bl_size);
