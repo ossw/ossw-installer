@@ -32,26 +32,24 @@ __asm void StartApplication(uint32_t start_addr)
 }
 
 void clone_to_memory(uint32_t *src, uint32_t *dest, uint32_t length) {
-	  uint32_t end_dest_addr = (uint32_t)dest + length;
-	  while((uint32_t)dest < end_dest_addr) {
-			  *dest++ = *src++;
-		}
+    uint32_t end_dest_addr = (uint32_t)dest + length;
+    while((uint32_t)dest < end_dest_addr) {
+        *dest++ = *src++;
+    }
 }
-	
+  
 /**
  * @brief Function for application main entry.
  */
 int main(void)
 {
-	  // TODO: verify image checksum
-	
     uint32_t *inst_src_addr = (uint32_t *)0x36000;
     uint32_t *inst_dest_addr = (uint32_t *)0x20003000;
-	  uint32_t inst_size = 0xB00;
-	
-	  clone_to_memory(inst_src_addr, inst_dest_addr, inst_size);
-	
-	  StartApplication((uint32_t)inst_dest_addr);
+    uint32_t inst_size = 0xB00;
+  
+    clone_to_memory(inst_src_addr, inst_dest_addr, inst_size);
+  
+    StartApplication((uint32_t)inst_dest_addr);
 }
 
 
