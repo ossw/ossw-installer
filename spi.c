@@ -36,20 +36,20 @@ uint32_t* spi_master_init(SPIModuleNumber module_number, SPIMode mode, bool lsb_
         spi_base_address->PSELMISO = SPI0_MISO;
         nrf_gpio_pin_set(SPI0_SS0); /* disable Set slave select (inactive high) */
     }
-/*    else
+    else
     {
         // Configure GPIO pins used for pselsck, pselmosi, pselmiso and pselss for SPI1
-        nrf_gpio_cfg_output(SPI_PSELSCK1);
-        nrf_gpio_cfg_output(SPI_PSELMOSI1);
-        nrf_gpio_cfg_input(SPI_PSELMISO1, NRF_GPIO_PIN_NOPULL);
-        nrf_gpio_cfg_output(SPI_PSELSS1);
+        nrf_gpio_cfg_output(SPI1_SCK);
+        nrf_gpio_cfg_output(SPI1_MOSI);
+        nrf_gpio_cfg_input(SPI1_MISO, NRF_GPIO_PIN_NOPULL);
+        nrf_gpio_cfg_output(SPI1_SS0);
 
         // Configure pins, frequency and mode 
-        spi_base_address->PSELSCK  = SPI_PSELSCK1;
-        spi_base_address->PSELMOSI = SPI_PSELMOSI1;
-        spi_base_address->PSELMISO = SPI_PSELMISO1;
-        nrf_gpio_pin_set(SPI_PSELSS1);         // disable Set slave select (inactive high)
-    }*/
+        spi_base_address->PSELSCK  = SPI1_SCK;
+        spi_base_address->PSELMOSI = SPI1_MOSI;
+        spi_base_address->PSELMISO = SPI1_MISO;
+        nrf_gpio_pin_clear(SPI1_SS0);         // disable Set slave select (inactive low)
+    }
 
     spi_base_address->FREQUENCY = (uint32_t) SPI_OPERATING_FREQUENCY;
 
@@ -142,7 +142,7 @@ bool spi_master_tx_rx(uint32_t *spi_base_address, uint32_t device, uint16_t tran
     return true;
 }
 
-bool spi_internal_tx_data(NRF_SPI_Type *spi_base, const uint8_t* tx_data, uint32_t tx_data_size) {
+bool spi_master_tx_data_no_cs(NRF_SPI_Type *spi_base, const uint8_t* tx_data, uint32_t tx_data_size) {
     uint32_t number_of_txd_bytes = 0;
     uint32_t counter = 0;
 	  while(number_of_txd_bytes < tx_data_size)
@@ -172,7 +172,7 @@ bool spi_internal_tx_data(NRF_SPI_Type *spi_base, const uint8_t* tx_data, uint32
 		return true;
 }
 
-bool spi_internal_rx_data(NRF_SPI_Type *spi_base, uint8_t* rx_data, uint32_t rx_data_size) {
+bool spi_master_rx_data_no_cs(NRF_SPI_Type *spi_base, uint8_t* rx_data, uint32_t rx_data_size) {
     uint32_t number_of_rxd_bytes = 0;
     uint32_t counter = 0;
 	  while(number_of_rxd_bytes < rx_data_size)
@@ -211,10 +211,10 @@ bool spi_master_tx_data(uint32_t *spi_base_address, uint32_t device, const uint8
     /* enable slave (slave select active low) */
     nrf_gpio_pin_clear(device);
 	
-	  success = spi_internal_tx_data(spi_base, command, command_size);
+	  success = spi_master_tx_data_no_cs(spi_base, command, command_size);
 	
 		if (success) {
-			  success = spi_internal_tx_data(spi_base, tx_data, tx_data_size);
+			  success = spi_master_tx_data_no_cs(spi_base, tx_data, tx_data_size);
 		}
 
     /* disable slave (slave select active low) */
@@ -232,7 +232,7 @@ bool spi_master_tx(uint32_t *spi_base_address, uint32_t device, const uint8_t* c
     /* enable slave (slave select active low) */
     nrf_gpio_pin_clear(device);
 	
-	  success = spi_internal_tx_data(spi_base, command, command_size);
+	  success = spi_master_tx_data_no_cs(spi_base, command, command_size);
 
     /* disable slave (slave select active low) */
     nrf_gpio_pin_set(device);
@@ -249,10 +249,10 @@ bool spi_master_rx_data(uint32_t *spi_base_address, uint32_t device, const uint8
     /* enable slave (slave select active low) */
     nrf_gpio_pin_clear(device);
 	
-	  success = spi_internal_tx_data(spi_base, command, command_size);
+	  success = spi_master_tx_data_no_cs(spi_base, command, command_size);
 	
 		if (success) {
-			  success = spi_internal_rx_data(spi_base, rx_data, rx_data_size);
+			  success = spi_master_rx_data_no_cs(spi_base, rx_data, rx_data_size);
 		}
 
     /* disable slave (slave select active low) */

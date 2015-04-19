@@ -26,10 +26,13 @@
 #include "nrf_gpio.h"
 #include "nrf_delay.h"
 #include "spi.h"
+#include "mlcd.h"
 #include "ext_flash.h"
-#include "boards.h"
 
 uint32_t * p_spi0_base_address;
+uint32_t * p_spi1_base_address;
+
+uint8_t last_progress;
 
 /** @brief Function for erasing a page in flash.
  *
@@ -144,10 +147,7 @@ void flash_word_write(uint32_t *address, uint32_t value)
 static void spi_init(void)
 {
     p_spi0_base_address = spi_master_init(SPI0, SPI_MODE0, false);
-}
-
-static void handleError(uint32_t error_code) {
-	  do{}while(true);
+    p_spi1_base_address = spi_master_init(SPI1, SPI_MODE0, false);
 }
 
 static bool restore_from_ext_flash(uint32_t *address, uint32_t size) {
@@ -181,6 +181,65 @@ static bool restore_from_ext_flash(uint32_t *address, uint32_t size) {
 		return true;
 }
 
+static uint8_t progress_bg_draw_func(uint8_t x, uint8_t y)
+{
+	  uint32_t d = (72-x)*(72-x) + (84-y)*(84-y);
+    if(d>2800 && d < 4100){
+        return 1;
+    }
+		return 0;
+}
+
+static uint8_t progress_draw_func(uint8_t x, uint8_t y)
+{
+	  uint32_t d = (72-x)*(72-x) + (84-y)*(84-y);
+    if(d>2800 && d < 4100){
+        return 1;
+    } else if (y<=125 && y>77 && x>56 && x<88) {
+				if (x>64 && x<80 && y<117) {
+						return 0;
+				} else {
+						return 1;
+				}
+		} else if (x+y > 110 && x-y < 34 && y<85 && !(x+y > 121 && x-y < 23 && y<78)) {
+				return 1;
+		}
+		return 0;
+}
+
+static uint8_t error_draw_func(uint8_t x, uint8_t y)
+{
+		uint32_t d = (72-x)*(72-x) + (84-y)*(84-y);
+    if(d>2800 && d < 4100){
+        return 1;
+    } else if (x+y > 146 && x+y<166 && x>30 && x < 120 && y > 40 && y<128) {
+        return 1;
+    }
+    return 0;
+}
+
+void init_progress_notification() {
+	  last_progress = 0;
+	  mlcd_set_screen_with_func(progress_bg_draw_func);
+	
+	  mlcd_display_on();
+		mlcd_backlight_on();
+}
+
+void update_progress_notification(uint8_t progress) {
+	  if(progress > last_progress) {
+			  mlcd_set_lines_with_func(progress_draw_func, 132u-progress, progress-last_progress);
+			
+				last_progress = progress;
+		}
+}
+
+static void handleError(uint32_t error_code) {
+	  mlcd_set_screen_with_func(error_draw_func);
+	  do{}while(true);
+}
+
+
 /**
  * @brief Function for application main entry.
  */
@@ -194,44 +253,65 @@ int main(void)
 	  uint32_t bl_size = 0x4000;
 	
     spi_init();
+    mlcd_init();
+	  mlcd_power_on();
 	
+	  nrf_delay_us(100000);
+	
+	  init_progress_notification();
+
 	  // erase all data in external flash
  	  if(!ext_flash_erase_chip()){
 			 handleError(0x01);
 		}
+		update_progress_notification(15);
  
   	// backup bootloader in external flash
 		if (!ext_flash_write_data_block((uint32_t)bl_dest_addr, (uint8_t *)bl_src_addr, bl_size)){
 			  handleError(0x11);
 		}
 		
+		update_progress_notification(25);
+		
 		// backup softdevice in external flash
 		if (!ext_flash_write_data_block((uint32_t)sd_dest_addr, (uint8_t *)sd_src_addr, sd_size)){
 			  handleError(0x12);
 		}
+		
+		update_progress_notification(45);
 		
 		// verify bootloader data
 		if (!ext_flash_check_equal((uint32_t)bl_dest_addr, (uint8_t *)bl_src_addr, bl_size)) {
 			  handleError(0x21);
 		}
 		
+		update_progress_notification(50);
+		
 		// verify softdevice data
 		if (!ext_flash_check_equal((uint32_t)sd_dest_addr, (uint8_t *)sd_src_addr, sd_size)) {
 			  handleError(0x22);
 		}
+	
+		update_progress_notification(65);
 		
 	  // erase UICR and set new bootloader address
 	  flash_uicr_erase();
 		uint32_t *uicr_bl = (uint32_t *)0x10001014;
 	  flash_word_write(uicr_bl, (uint32_t)bl_dest_addr);
 	
+		update_progress_notification(70);
+		
 		// restore softdevice from external cache
 		restore_from_ext_flash(sd_dest_addr, sd_size);
+		
+		update_progress_notification(90);
 	
 		// restore bootloader from external cache
 		restore_from_ext_flash(bl_dest_addr, bl_size);
 	
-	//do{}while(true);
+		
+		update_progress_notification(100);
+		
 	  NVIC_SystemReset();
 }
 
