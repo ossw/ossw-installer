@@ -47,7 +47,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>.\_build\</OutputDirectory>
-          <OutputName>ossw-jump</OutputName>
+          <OutputName>ossw-installer-jump</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -409,9 +409,9 @@
           <GroupName>app</GroupName>
           <Files>
             <File>
-              <FileName>main_jump.c</FileName>
+              <FileName>main_installer_jump.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\main_jump.c</FilePath>
+              <FilePath>..\main_installer_jump.c</FilePath>
             </File>
           </Files>
         </Group>

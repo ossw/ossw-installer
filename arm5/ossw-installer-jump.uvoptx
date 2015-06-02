@@ -199,8 +199,8 @@
       <Focus>0</Focus>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\main_jump.c</PathWithFileName>
-      <FilenameWithoutPath>main_jump.c</FilenameWithoutPath>
+      <PathWithFileName>..\main_installer_jump.c</PathWithFileName>
+      <FilenameWithoutPath>main_installer_jump.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

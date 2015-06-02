@@ -1,3 +1,6 @@
 ossw-jump.uvguix.*
 arm5/_build
 ossw-installer.uvguix.*
+ossw-installer-jump.uvguix.*
+ossw-revert-jump.uvguix.*
+ossw-revert.uvguix.*
